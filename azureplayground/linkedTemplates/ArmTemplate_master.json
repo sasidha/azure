@@ -1,0 +1,91 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "azureplayground"
+		},
+		"FRAUDNEW_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'FRAUDNEW'"
+		},
+		"FraudTXNS_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'FraudTXNS'"
+		},
+		"SnowflakeDB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SnowflakeDB'"
+		},
+		"linkedService1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedService1'"
+		},
+		"FRAUDNEW_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sasiazurestorage.dfs.core.windows.net/"
+		},
+		"FraudTXNS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://snowflakesampledata2022.dfs.core.windows.net/"
+		},
+		"FraudTXN_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'FraudTXN'"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "azureplayground_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"FRAUDNEW_accountKey": {
+						"value": "[parameters('FRAUDNEW_accountKey')]"
+					},
+					"FraudTXNS_accountKey": {
+						"value": "[parameters('FraudTXNS_accountKey')]"
+					},
+					"SnowflakeDB_connectionString": {
+						"value": "[parameters('SnowflakeDB_connectionString')]"
+					},
+					"linkedService1_connectionString": {
+						"value": "[parameters('linkedService1_connectionString')]"
+					},
+					"FRAUDNEW_properties_typeProperties_url": {
+						"value": "[parameters('FRAUDNEW_properties_typeProperties_url')]"
+					},
+					"FraudTXNS_properties_typeProperties_url": {
+						"value": "[parameters('FraudTXNS_properties_typeProperties_url')]"
+					},
+					"FraudTXN_sasUri": {
+						"value": "[parameters('FraudTXN_sasUri')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
