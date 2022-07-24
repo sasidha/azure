@@ -1,0 +1,9 @@
+{
+	"name": "azureplayground",
+	"location": "southeastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f6eeef96-db06-498a-84dd-3f457ceb16f5",
+		"tenantId": "7369baca-35c5-495a-8938-77595a53f4ba"
+	}
+}
