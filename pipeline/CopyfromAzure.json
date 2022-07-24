@@ -3,8 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
-				"type": "Copy",
+				"name": "Connect to Snowflake",
+				"type": "Script",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -14,147 +14,18 @@
 					"secureInput": false
 				},
 				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SnowflakeSink",
-						"importSettings": {
-							"type": "SnowflakeImportCopyCommand"
-						}
-					},
-					"enableStaging": false,
-					"enableSkipIncompatibleRow": false,
-					"logSettings": {
-						"enableCopyActivityLog": true,
-						"copyActivityLogSettings": {
-							"logLevel": "Info",
-							"enableReliableLogging": false
-						},
-						"logLocationSettings": {
-							"linkedServiceName": {
-								"referenceName": "linkedService1",
-								"type": "LinkedServiceReference"
-							}
-						}
-					},
-					"translator": {
-						"type": "TabularTranslator",
-						"mappings": [
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 1
-								},
-								"sink": {
-									"name": "TRANSACTION_ID",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 2
-								},
-								"sink": {
-									"name": "TX_DATETIME",
-									"type": "DateTime"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 3
-								},
-								"sink": {
-									"name": "CUSTOMER_ID",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 4
-								},
-								"sink": {
-									"name": "TERMINAL_ID",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 5
-								},
-								"sink": {
-									"name": "TX_AMOUNT",
-									"type": "Double"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 6
-								},
-								"sink": {
-									"name": "TX_TIME_SECONDS",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 7
-								},
-								"sink": {
-									"name": "TX_TIME_DAYS",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 8
-								},
-								"sink": {
-									"name": "TX_FRAUD",
-									"type": "Int64"
-								}
-							},
-							{
-								"source": {
-									"type": "String",
-									"ordinal": 9
-								},
-								"sink": {
-									"name": "TX_FRAUD_SCENARIO",
-									"type": "Int64"
-								}
-							}
-						]
-					}
+				"linkedServiceName": {
+					"referenceName": "SnowflakeDB",
+					"type": "LinkedServiceReference"
 				},
-				"inputs": [
-					{
-						"referenceName": "FraudTXN",
-						"type": "DatasetReference"
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "SSSnowflake",
-						"type": "DatasetReference"
-					}
-				]
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "use schema azurestage;\ncreate or replace TABLE CUSTOMER_TRANSACTIONS_FRAUD (\n\tTRANSACTION_ID NUMBER(38,0),\n\tTX_DATETIME TIMESTAMP_NTZ(9),\n\tCUSTOMER_ID NUMBER(38,0),\n\tTERMINAL_ID NUMBER(38,0),\n\tTX_AMOUNT FLOAT,\n\tTX_TIME_SECONDS NUMBER(38,0),\n\tTX_TIME_DAYS NUMBER(38,0),\n\tTX_FRAUD NUMBER(38,0),\n\tTX_FRAUD_SCENARIO NUMBER(38,0)\n);"
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
