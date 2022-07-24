@@ -27,13 +27,13 @@
 			"type": "string",
 			"defaultValue": "https://sasiazurestorage.dfs.core.windows.net/"
 		},
-		"FraudTXNS_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://snowflakesampledata2022.dfs.core.windows.net/"
-		},
 		"FraudTXN_sasUri": {
 			"type": "secureString",
 			"metadata": "Secure string for 'sasUri' of 'FraudTXN'"
+		},
+		"FraudTXNS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://snowflakesampledata2022.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"type": "string",
@@ -77,11 +77,11 @@
 					"FRAUDNEW_properties_typeProperties_url": {
 						"value": "[parameters('FRAUDNEW_properties_typeProperties_url')]"
 					},
-					"FraudTXNS_properties_typeProperties_url": {
-						"value": "[parameters('FraudTXNS_properties_typeProperties_url')]"
-					},
 					"FraudTXN_sasUri": {
 						"value": "[parameters('FraudTXN_sasUri')]"
+					},
+					"FraudTXNS_properties_typeProperties_url": {
+						"value": "[parameters('FraudTXNS_properties_typeProperties_url')]"
 					}
 				}
 			},

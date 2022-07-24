@@ -20,11 +20,11 @@
 		"FRAUDNEW_properties_typeProperties_url": {
 			"value": "https://sasiazurestorage.dfs.core.windows.net/"
 		},
-		"FraudTXNS_properties_typeProperties_url": {
-			"value": "https://snowflakesampledata2022.dfs.core.windows.net/"
-		},
 		"FraudTXN_sasUri": {
 			"value": ""
+		},
+		"FraudTXNS_properties_typeProperties_url": {
+			"value": "https://snowflakesampledata2022.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"value": ""

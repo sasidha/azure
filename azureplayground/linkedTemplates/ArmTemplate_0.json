@@ -27,13 +27,13 @@
 			"type": "string",
 			"defaultValue": "https://sasiazurestorage.dfs.core.windows.net/"
 		},
-		"FraudTXNS_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://snowflakesampledata2022.dfs.core.windows.net/"
-		},
 		"FraudTXN_sasUri": {
 			"type": "secureString",
 			"metadata": "Secure string for 'sasUri' of 'FraudTXN'"
+		},
+		"FraudTXNS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://snowflakesampledata2022.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -53,6 +53,19 @@
 						"type": "SecureString",
 						"value": "[parameters('FRAUDNEW_accountKey')]"
 					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FraudTXN')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"sasUri": "[parameters('FraudTXN_sasUri')]"
 				}
 			},
 			"dependsOn": []
@@ -88,19 +101,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/FraudTXN')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"sasUri": "[parameters('FraudTXN_sasUri')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/linkedService1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -112,6 +112,112 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyfromAzure')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Connect to Snowflake",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "SnowflakeDB",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": "use schema azurestage;\ncreate or replace TABLE CUSTOMER_TRANSACTIONS_FRAUD (\n\tTRANSACTION_ID NUMBER(38,0),\n\tTX_DATETIME TIMESTAMP_NTZ(9),\n\tCUSTOMER_ID NUMBER(38,0),\n\tTERMINAL_ID NUMBER(38,0),\n\tTX_AMOUNT FLOAT,\n\tTX_TIME_SECONDS NUMBER(38,0),\n\tTX_TIME_DAYS NUMBER(38,0),\n\tTX_FRAUD NUMBER(38,0),\n\tTX_FRAUD_SCENARIO NUMBER(38,0)\n);\nDROP TABLE FRAUD_TERMINALS;"
+								}
+							]
+						}
+					},
+					{
+						"name": "LOAD FROM ADLS",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Connect to Snowflake",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "SnowflakeDB",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": "copy into CUSTOMER_TRANSACTIONS_FRAUD\n  from @my_azure_stage/fraud_transactions.csv\n  file_format = (format_name = 'my_csv_format' , error_on_column_count_mismatch=false)\n  on_error = 'skip_file';"
+								}
+							]
+						}
+					},
+					{
+						"name": "JAVA SNOWPARK AGGREGATE",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "LOAD FROM ADLS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "SnowflakeDB",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "CALL AGG_FRAUD('CUSTOMER_TRANSACTIONS_FRAUD');"
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SnowflakeDB')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/FraudTXN')]",
@@ -243,181 +349,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/SnowflakeDB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/CopyfromAzure')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SnowflakeSink",
-								"importSettings": {
-									"type": "SnowflakeImportCopyCommand"
-								}
-							},
-							"enableStaging": false,
-							"enableSkipIncompatibleRow": false,
-							"logSettings": {
-								"enableCopyActivityLog": true,
-								"copyActivityLogSettings": {
-									"logLevel": "Info",
-									"enableReliableLogging": false
-								},
-								"logLocationSettings": {
-									"linkedServiceName": {
-										"referenceName": "linkedService1",
-										"type": "LinkedServiceReference"
-									}
-								}
-							},
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 1
-										},
-										"sink": {
-											"name": "TRANSACTION_ID",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 2
-										},
-										"sink": {
-											"name": "TX_DATETIME",
-											"type": "DateTime"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 3
-										},
-										"sink": {
-											"name": "CUSTOMER_ID",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 4
-										},
-										"sink": {
-											"name": "TERMINAL_ID",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 5
-										},
-										"sink": {
-											"name": "TX_AMOUNT",
-											"type": "Double"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 6
-										},
-										"sink": {
-											"name": "TX_TIME_SECONDS",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 7
-										},
-										"sink": {
-											"name": "TX_TIME_DAYS",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 8
-										},
-										"sink": {
-											"name": "TX_FRAUD",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"type": "String",
-											"ordinal": 9
-										},
-										"sink": {
-											"name": "TX_FRAUD_SCENARIO",
-											"type": "Int64"
-										}
-									}
-								]
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "FraudTXN",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "SSSnowflake",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/FraudTXN')]",
-				"[concat(variables('factoryId'), '/datasets/SSSnowflake')]",
-				"[concat(variables('factoryId'), '/linkedServices/linkedService1')]"
 			]
 		}
 	]
