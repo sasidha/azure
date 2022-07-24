@@ -58,6 +58,38 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "JAVA SNOWPARK AGGREGATE",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "LOAD FROM ADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "SnowflakeDB",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "CALL AGG_FRAUD('CUSTOMER_TRANSACTIONS_FRAUD');"
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
