@@ -41,7 +41,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/CopyfromAzure')]",
+			"name": "[concat(parameters('factoryName'), '/Azure Snowflake Pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
