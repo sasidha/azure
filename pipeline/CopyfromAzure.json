@@ -26,6 +26,38 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "LOAD FROM ADLS",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Connect to Snowflake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "SnowflakeDB",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "copy into CUSTOMER_TRANSACTIONS_FRAUD\n  from @my_azure_stage/fraud_transactions.csv\n  file_format = (format_name = 'my_csv_format' , error_on_column_count_mismatch=false)\n  on_error = 'skip_file';"
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
