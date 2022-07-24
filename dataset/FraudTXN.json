@@ -11,7 +11,7 @@
 			"location": {
 				"type": "AzureBlobStorageLocation",
 				"fileName": "fraud_transactions.csv",
-				"folderPath": "fraudtxn"
+				"container": "fraudtxn"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
